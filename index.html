@@ -419,7 +419,7 @@ header h1 span { color:var(--gold); }
 // CONFIG — saved in localStorage
 // ─────────────────────────────────────────
 const DEFAULT_PW = 'helena2025';
-let supabase = null;
+let supabaseClient = null;
 let loggedIn = false;
 let pendingFile = null;
 let artworksCache = [];
@@ -437,7 +437,7 @@ function getPassword() { return localStorage.getItem('hg_pw') || DEFAULT_PW; }
 // ─────────────────────────────────────────
 function initSupabase(url, key) {
   try {
-    supabase = window.supabase.createClient(url, key);
+    supabaseClient = window.supabase.createClient(url, key);
     return true;
   } catch(e) {
     return false;
@@ -455,18 +455,36 @@ function tryAutoConnect() {
   return false;
 }
 
-document.getElementById('btn-connect').addEventListener('click', function() {
-  var url = document.getElementById('sb-url').value.trim();
+document.getElementById('btn-connect').addEventListener('click', async function() {
+  var url = document.getElementById('sb-url').value.trim().replace(/\/$/, '');
   var key = document.getElementById('sb-key').value.trim();
+  var btn = document.getElementById('btn-connect');
   if (!url || !key) { showToast('Please enter both URL and Key'); return; }
-  if (initSupabase(url, key)) {
+  if (!url.startsWith('https://')) { showToast('URL must start with https://'); return; }
+  btn.textContent = 'Connecting...';
+  btn.disabled = true;
+  initSupabase(url, key);
+  try {
+    var test = await supabaseClient.from('artworks').select('id').limit(1);
+    if (test.error) throw test.error;
     localStorage.setItem('hg_sb_url', url);
     localStorage.setItem('hg_sb_key', key);
     document.getElementById('setup-banner').classList.add('hidden');
-    showToast('Connected to Supabase ✦');
+    showToast('Connected to Supabase!');
     loadAndRender();
-  } else {
-    showToast('Connection failed — check your URL and Key');
+  } catch(e) {
+    supabaseClient = null;
+    btn.textContent = 'Connect';
+    btn.disabled = false;
+    var msg = e.message || JSON.stringify(e);
+    var errP = document.getElementById('connect-error');
+    if (!errP) {
+      errP = document.createElement('p');
+      errP.id = 'connect-error';
+      errP.style.cssText = 'color:#e07070;font-size:.75rem;margin-top:8px;letter-spacing:.1em;';
+      document.getElementById('setup-banner').appendChild(errP);
+    }
+    errP.textContent = 'Error: ' + msg;
   }
 });
 
@@ -489,13 +507,13 @@ async function loadAndRender() {
   var grid = document.getElementById('gallery-grid');
   grid.innerHTML = '<div id="loading-state"><div class="spinner"></div><p style="color:var(--text-light);letter-spacing:.2em;font-size:.8rem;">Loading collection…</p></div>';
 
-  if (!supabase) {
+  if (!supabaseClient) {
     grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔌</div><p class="empty-text">Not connected to Supabase yet</p><p class="empty-sub">Fill in your credentials above</p></div>';
     return;
   }
 
   try {
-    var result = await supabase
+    var result = await supabaseClient
       .from('artworks')
       .select('*')
       .order('created_at', { ascending: false });
@@ -572,14 +590,14 @@ function renderGallery(artworks) {
 // DELETE
 // ─────────────────────────────────────────
 async function deleteArtwork(id, imagePath) {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   try {
     // Delete image from storage
     if (imagePath) {
-      await supabase.storage.from('artwork-images').remove([imagePath]);
+      await supabaseClient.storage.from('artwork-images').remove([imagePath]);
     }
     // Delete row from database
-    var result = await supabase.from('artworks').delete().eq('id', id);
+    var result = await supabaseClient.from('artworks').delete().eq('id', id);
     if (result.error) throw result.error;
     showToast('Artwork removed from the collection');
     loadAndRender();
@@ -691,7 +709,7 @@ async function doUpload() {
     document.getElementById('upload-error').style.display = 'block';
     return;
   }
-  if (!supabase) { showToast('Not connected to Supabase'); return; }
+  if (!supabaseClient) { showToast('Not connected to Supabase'); return; }
 
   document.getElementById('upload-error').style.display = 'none';
   document.getElementById('upload-submit').textContent = 'Uploading…';
@@ -706,7 +724,7 @@ async function doUpload() {
 
     document.getElementById('upload-progress-bar').style.width = '60%';
 
-    var storageResult = await supabase.storage
+    var storageResult = await supabaseClient.storage
       .from('artwork-images')
       .upload(fileName, pendingFile, { cacheControl: '3600', upsert: false });
 
@@ -715,11 +733,11 @@ async function doUpload() {
     document.getElementById('upload-progress-bar').style.width = '80%';
 
     // 2. Get public URL
-    var urlResult = supabase.storage.from('artwork-images').getPublicUrl(fileName);
+    var urlResult = supabaseClient.storage.from('artwork-images').getPublicUrl(fileName);
     var publicUrl = urlResult.data.publicUrl;
 
     // 3. Insert record into artworks table
-    var insertResult = await supabase.from('artworks').insert([{
+    var insertResult = await supabaseClient.from('artworks').insert([{
       title: title,
       meta: meta,
       image_url: publicUrl,
