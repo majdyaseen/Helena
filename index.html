@@ -400,6 +400,7 @@ function getPassword() { return localStorage.getItem('hg_pw') || DEFAULT_PW; }
 function sbHeaders() {
   return {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
     'apikey': SB_KEY,
     'Authorization': 'Bearer ' + SB_KEY
   };
@@ -407,6 +408,7 @@ function sbHeaders() {
 
 async function sbSelect() {
   var res = await fetch(SB_URL + '/rest/v1/artworks?select=*&order=created_at.desc', {
+    mode: 'cors',
     headers: sbHeaders()
   });
   var data = await res.json();
@@ -417,6 +419,7 @@ async function sbSelect() {
 async function sbInsert(record) {
   var res = await fetch(SB_URL + '/rest/v1/artworks', {
     method: 'POST',
+    mode: 'cors',
     headers: Object.assign({}, sbHeaders(), { 'Prefer': 'return=representation' }),
     body: JSON.stringify(record)
   });
@@ -428,6 +431,7 @@ async function sbInsert(record) {
 async function sbDelete(id) {
   var res = await fetch(SB_URL + '/rest/v1/artworks?id=eq.' + id, {
     method: 'DELETE',
+    mode: 'cors',
     headers: sbHeaders()
   });
   if (!res.ok) { var d = await res.json(); throw d; }
