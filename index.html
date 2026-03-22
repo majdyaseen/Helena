@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Helena's Gallery</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Raleway:wght@300;400&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --gold: #c9a96e;
@@ -28,31 +27,7 @@ body::before {
     repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(201,169,110,.03) 60px,rgba(201,169,110,.03) 61px);
 }
 
-/* SETUP BANNER */
-#setup-banner {
-  background: linear-gradient(135deg, #2a1f0e, #1a1208);
-  border-bottom: 1px solid var(--gold);
-  padding: 16px 24px;
-  text-align: center;
-  position: relative; z-index: 20;
-}
-#setup-banner p { font-family:'Cinzel',serif; font-size:.8rem; letter-spacing:.15em; color: var(--gold); margin-bottom: 10px; }
-#setup-banner .setup-inputs { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-#setup-banner input {
-  padding: 8px 14px; background: rgba(0,0,0,.4);
-  border: 1px solid rgba(201,169,110,.4); color: var(--cream);
-  font-family:'Raleway',sans-serif; font-size:.8rem; outline:none;
-  width: 280px;
-}
-#setup-banner input:focus { border-color: var(--gold); }
-#setup-banner input::placeholder { color: var(--text-light); opacity:.7; }
-#btn-connect {
-  padding: 8px 20px; background: var(--gold); color: var(--dark);
-  border: none; font-family:'Cinzel',serif; font-size:.72rem;
-  letter-spacing:.15em; cursor:pointer; transition:background .2s;
-}
-#btn-connect:hover { background: var(--gold-light); }
-#setup-banner.hidden { display: none; }
+
 
 /* HEADER */
 header {
@@ -272,21 +247,11 @@ header h1 span { color:var(--gold); }
   .modal{padding:36px 24px;}
   #gallery-section{padding:30px 16px 100px;}
   #gallery-grid{gap:36px;grid-template-columns:1fr;}
-  #setup-banner .setup-inputs { flex-direction:column; align-items:center; }
-  #setup-banner input { width:100%; max-width:320px; }
 }
 </style>
 </head>
 <body>
 
-<!-- SETUP BANNER — hidden once configured -->
-<div id="setup-banner">
-  <p>⚙ &nbsp; SUPABASE SETUP — Paste your Project URL and Anon Key below, then click Connect</p>
-  <div class="setup-inputs">
-    <input type="text" id="sb-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
-    <input type="text" id="sb-key" placeholder="your anon/public key">
-    <button id="btn-connect">Connect</button>
-  </div>
 </div>
 
 <header>
@@ -419,74 +384,88 @@ header h1 span { color:var(--gold); }
 // CONFIG — saved in localStorage
 // ─────────────────────────────────────────
 const DEFAULT_PW = 'helena2025';
+const SB_URL = 'https://kovtunrgiskoqgglmlzb.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvdnR1bnJnaXNrb3FnZ2xtbHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyMDIzNDMsImV4cCI6MjA4OTc3ODM0M30.axgxZyVYnVmuMPlYRmBN-e0QQUDmliuAAXpxY7ZUVS0';
 let supabaseClient = null;
 let loggedIn = false;
 let pendingFile = null;
 let artworksCache = [];
 
-function getCfg() {
-  return {
-    url: localStorage.getItem('hg_sb_url') || '',
-    key: localStorage.getItem('hg_sb_key') || ''
-  };
-}
 function getPassword() { return localStorage.getItem('hg_pw') || DEFAULT_PW; }
 
 // ─────────────────────────────────────────
 // SUPABASE INIT
 // ─────────────────────────────────────────
-function initSupabase(url, key) {
-  try {
-    supabaseClient = window.supabase.createClient(url, key);
-    return true;
-  } catch(e) {
-    return false;
-  }
+// Plain fetch-based Supabase calls — no library needed
+function sbHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY
+  };
+}
+
+async function sbSelect() {
+  var res = await fetch(SB_URL + '/rest/v1/artworks?select=*&order=created_at.desc', {
+    headers: sbHeaders()
+  });
+  var data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+async function sbInsert(record) {
+  var res = await fetch(SB_URL + '/rest/v1/artworks', {
+    method: 'POST',
+    headers: Object.assign({}, sbHeaders(), { 'Prefer': 'return=representation' }),
+    body: JSON.stringify(record)
+  });
+  var data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+async function sbDelete(id) {
+  var res = await fetch(SB_URL + '/rest/v1/artworks?id=eq.' + id, {
+    method: 'DELETE',
+    headers: sbHeaders()
+  });
+  if (!res.ok) { var d = await res.json(); throw d; }
+}
+
+async function sbUpload(fileName, file) {
+  var res = await fetch(SB_URL + '/storage/v1/object/artwork-images/' + fileName, {
+    method: 'POST',
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': file.type,
+      'x-upsert': 'false'
+    },
+    body: file
+  });
+  var data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+function sbPublicUrl(fileName) {
+  return SB_URL + '/storage/v1/object/public/artwork-images/' + fileName;
+}
+
+async function sbDeleteFile(fileName) {
+  await fetch(SB_URL + '/storage/v1/object/artwork-images/' + fileName, {
+    method: 'DELETE',
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  });
 }
 
 function tryAutoConnect() {
-  var cfg = getCfg();
-  if (cfg.url && cfg.key) {
-    if (initSupabase(cfg.url, cfg.key)) {
-      document.getElementById('setup-banner').classList.add('hidden');
-      return true;
-    }
-  }
-  return false;
+  supabaseClient = true; // just a flag to say we're ready
+  return true;
 }
 
-document.getElementById('btn-connect').addEventListener('click', async function() {
-  var url = document.getElementById('sb-url').value.trim().replace(/\/$/, '');
-  var key = document.getElementById('sb-key').value.trim();
-  var btn = document.getElementById('btn-connect');
-  if (!url || !key) { showToast('Please enter both URL and Key'); return; }
-  if (!url.startsWith('https://')) { showToast('URL must start with https://'); return; }
-  btn.textContent = 'Connecting...';
-  btn.disabled = true;
-  initSupabase(url, key);
-  try {
-    var test = await supabaseClient.from('artworks').select('id').limit(1);
-    if (test.error) throw test.error;
-    localStorage.setItem('hg_sb_url', url);
-    localStorage.setItem('hg_sb_key', key);
-    document.getElementById('setup-banner').classList.add('hidden');
-    showToast('Connected to Supabase!');
-    loadAndRender();
-  } catch(e) {
-    supabaseClient = null;
-    btn.textContent = 'Connect';
-    btn.disabled = false;
-    var msg = e.message || JSON.stringify(e);
-    var errP = document.getElementById('connect-error');
-    if (!errP) {
-      errP = document.createElement('p');
-      errP.id = 'connect-error';
-      errP.style.cssText = 'color:#e07070;font-size:.75rem;margin-top:8px;letter-spacing:.1em;';
-      document.getElementById('setup-banner').appendChild(errP);
-    }
-    errP.textContent = 'Error: ' + msg;
-  }
-});
+
 
 // ─────────────────────────────────────────
 // HELPERS
@@ -507,23 +486,15 @@ async function loadAndRender() {
   var grid = document.getElementById('gallery-grid');
   grid.innerHTML = '<div id="loading-state"><div class="spinner"></div><p style="color:var(--text-light);letter-spacing:.2em;font-size:.8rem;">Loading collection…</p></div>';
 
-  if (!supabaseClient) {
-    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔌</div><p class="empty-text">Not connected to Supabase yet</p><p class="empty-sub">Fill in your credentials above</p></div>';
-    return;
-  }
+  
 
   try {
-    var result = await supabaseClient
-      .from('artworks')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (result.error) throw result.error;
-    artworksCache = result.data || [];
+    artworksCache = await sbSelect();
     renderGallery(artworksCache);
   } catch(e) {
     console.error(e);
-    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠</div><p class="empty-text">Could not load artworks</p><p class="empty-sub">' + esc(e.message) + '</p></div>';
+    var errMsg = e.message || e.details || e.hint || JSON.stringify(e);
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠</div><p class="empty-text">Could not load artworks</p><p class="empty-sub">' + esc(errMsg) + '</p></div>';
   }
 }
 
@@ -590,19 +561,13 @@ function renderGallery(artworks) {
 // DELETE
 // ─────────────────────────────────────────
 async function deleteArtwork(id, imagePath) {
-  if (!supabaseClient) return;
   try {
-    // Delete image from storage
-    if (imagePath) {
-      await supabaseClient.storage.from('artwork-images').remove([imagePath]);
-    }
-    // Delete row from database
-    var result = await supabaseClient.from('artworks').delete().eq('id', id);
-    if (result.error) throw result.error;
+    if (imagePath) await sbDeleteFile(imagePath);
+    await sbDelete(id);
     showToast('Artwork removed from the collection');
     loadAndRender();
   } catch(e) {
-    showToast('Error removing artwork: ' + e.message);
+    showToast('Error: ' + (e.message || e.details || JSON.stringify(e)));
   }
 }
 
@@ -709,7 +674,7 @@ async function doUpload() {
     document.getElementById('upload-error').style.display = 'block';
     return;
   }
-  if (!supabaseClient) { showToast('Not connected to Supabase'); return; }
+  
 
   document.getElementById('upload-error').style.display = 'none';
   document.getElementById('upload-submit').textContent = 'Uploading…';
@@ -724,27 +689,20 @@ async function doUpload() {
 
     document.getElementById('upload-progress-bar').style.width = '60%';
 
-    var storageResult = await supabaseClient.storage
-      .from('artwork-images')
-      .upload(fileName, pendingFile, { cacheControl: '3600', upsert: false });
-
-    if (storageResult.error) throw storageResult.error;
+    await sbUpload(fileName, pendingFile);
 
     document.getElementById('upload-progress-bar').style.width = '80%';
 
     // 2. Get public URL
-    var urlResult = supabaseClient.storage.from('artwork-images').getPublicUrl(fileName);
-    var publicUrl = urlResult.data.publicUrl;
+    var publicUrl = sbPublicUrl(fileName);
 
     // 3. Insert record into artworks table
-    var insertResult = await supabaseClient.from('artworks').insert([{
+    await sbInsert({
       title: title,
       meta: meta,
       image_url: publicUrl,
       image_path: fileName
-    }]);
-
-    if (insertResult.error) throw insertResult.error;
+    });
 
     document.getElementById('upload-progress-bar').style.width = '100%';
 
@@ -761,7 +719,7 @@ async function doUpload() {
     document.getElementById('upload-submit').disabled = false;
     document.getElementById('upload-progress').style.display = 'none';
     document.getElementById('upload-error').style.display = 'block';
-    document.getElementById('upload-error').textContent = 'Upload failed: ' + e.message;
+    document.getElementById('upload-error').textContent = 'Upload failed: ' + (e.message || e.details || JSON.stringify(e));
     console.error(e);
   }
 }
