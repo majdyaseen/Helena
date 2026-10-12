@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Helena's Gallery</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Raleway:wght@300;400&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --gold: #c9a96e;
@@ -28,33 +27,8 @@ body::before {
     repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(201,169,110,.03) 60px,rgba(201,169,110,.03) 61px);
 }
 
-/* SETUP BANNER */
-#setup-banner {
-  background: linear-gradient(135deg, #2a1f0e, #1a1208);
-  border-bottom: 1px solid var(--gold);
-  padding: 16px 24px;
-  text-align: center;
-  position: relative; z-index: 20;
-}
-#setup-banner p { font-family:'Cinzel',serif; font-size:.8rem; letter-spacing:.15em; color: var(--gold); margin-bottom: 10px; }
-#setup-banner .setup-inputs { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-#setup-banner input {
-  padding: 8px 14px; background: rgba(0,0,0,.4);
-  border: 1px solid rgba(201,169,110,.4); color: var(--cream);
-  font-family:'Raleway',sans-serif; font-size:.8rem; outline:none;
-  width: 280px;
-}
-#setup-banner input:focus { border-color: var(--gold); }
-#setup-banner input::placeholder { color: var(--text-light); opacity:.7; }
-#btn-connect {
-  padding: 8px 20px; background: var(--gold); color: var(--dark);
-  border: none; font-family:'Cinzel',serif; font-size:.72rem;
-  letter-spacing:.15em; cursor:pointer; transition:background .2s;
-}
-#btn-connect:hover { background: var(--gold-light); }
-#setup-banner.hidden { display: none; }
 
-/* HEADER */
+
 header {
   position:relative; z-index:10; text-align:center;
   padding:60px 20px 40px; border-bottom:1px solid rgba(201,169,110,.3);
@@ -78,7 +52,6 @@ header h1 span { color:var(--gold); }
   animation: fadeDown .8s ease .6s both;
 }
 
-/* NAV */
 .nav-bar {
   position:relative; z-index:10;
   display:flex; justify-content:center; gap:16px; padding:20px; flex-wrap:wrap;
@@ -99,7 +72,6 @@ header h1 span { color:var(--gold); }
 .btn-primary { background:var(--gold); color:var(--dark); }
 .btn-primary:hover { color:var(--dark); }
 
-/* GALLERY */
 #gallery-section {
   position:relative; z-index:5;
   padding:40px 30px 100px; max-width:1400px; margin:0 auto;
@@ -113,7 +85,6 @@ header h1 span { color:var(--gold); }
   display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:50px;
 }
 
-/* LOADING SPINNER */
 #loading-state {
   grid-column:1/-1; text-align:center; padding:80px 20px;
 }
@@ -124,7 +95,6 @@ header h1 span { color:var(--gold); }
 }
 @keyframes spin { to { transform:rotate(360deg); } }
 
-/* ART ITEM */
 .art-item { animation: fadeUp .7s ease both; display:flex; flex-direction:column; }
 .frame-wrapper { cursor:pointer; transition:transform .4s ease; }
 .frame-wrapper:hover { transform:scale(1.02); }
@@ -153,7 +123,6 @@ header h1 span { color:var(--gold); }
 }
 .artwork-meta { font-size:.75rem; letter-spacing:.15em; color:var(--text-light); text-transform:uppercase; }
 
-/* DELETE BUTTON */
 .artwork-delete {
   display:none; width:100%; margin-top:12px; padding:10px 0;
   background:transparent; border:1px solid rgba(200,80,80,.5);
@@ -162,13 +131,11 @@ header h1 span { color:var(--gold); }
 }
 .artwork-delete:hover { background:rgba(200,80,80,.15); border-color:#e08080; color:#ffaaaa; }
 
-/* EMPTY */
 .empty-state { grid-column:1/-1; text-align:center; padding:80px 20px; }
 .empty-icon { font-size:3rem; margin-bottom:20px; opacity:.3; }
 .empty-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.4rem; color:var(--text-light); }
 .empty-sub { font-size:.8rem; letter-spacing:.2em; color:var(--gold-dark); margin-top:10px; text-transform:uppercase; }
 
-/* MODALS */
 .modal-overlay {
   position:fixed; inset:0; background:rgba(10,8,5,.92);
   z-index:1000; display:flex; align-items:center; justify-content:center;
@@ -214,7 +181,6 @@ header h1 span { color:var(--gold); }
 .form-actions { display:flex; gap:12px; margin-top:8px; }
 .form-actions .btn { flex:1; }
 
-/* Upload progress */
 #upload-progress {
   display:none; margin-top:12px;
   height:3px; background:rgba(201,169,110,.2); position:relative; overflow:hidden;
@@ -224,7 +190,6 @@ header h1 span { color:var(--gold); }
   transition:width .3s ease;
 }
 
-/* LIGHTBOX */
 #lightbox {
   position:fixed; inset:0; background:rgba(5,4,2,.97);
   z-index:2000; display:flex; align-items:center; justify-content:center;
@@ -244,7 +209,6 @@ header h1 span { color:var(--gold); }
 #lightbox-caption h3 { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.6rem; color:var(--cream); }
 #lightbox-caption p { font-size:.75rem; letter-spacing:.2em; color:var(--gold); text-transform:uppercase; margin-top:4px; }
 
-/* STATUS BAR */
 #status-bar {
   position:fixed; bottom:0; left:0; right:0;
   background:rgba(20,16,10,.95); border-top:1px solid rgba(201,169,110,.2);
@@ -254,7 +218,6 @@ header h1 span { color:var(--gold); }
 }
 #status-bar .status-left { color:var(--gold); }
 
-/* TOAST */
 #toast {
   position:fixed; top:30px; left:50%;
   transform:translateX(-50%) translateY(-80px);
@@ -272,21 +235,11 @@ header h1 span { color:var(--gold); }
   .modal{padding:36px 24px;}
   #gallery-section{padding:30px 16px 100px;}
   #gallery-grid{gap:36px;grid-template-columns:1fr;}
-  #setup-banner .setup-inputs { flex-direction:column; align-items:center; }
-  #setup-banner input { width:100%; max-width:320px; }
 }
 </style>
 </head>
 <body>
 
-<!-- SETUP BANNER — hidden once configured -->
-<div id="setup-banner">
-  <p>⚙ &nbsp; SUPABASE SETUP — Paste your Project URL and Anon Key below, then click Connect</p>
-  <div class="setup-inputs">
-    <input type="text" id="sb-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
-    <input type="text" id="sb-key" placeholder="your anon/public key">
-    <button id="btn-connect">Connect</button>
-  </div>
 </div>
 
 <header>
@@ -317,7 +270,6 @@ header h1 span { color:var(--gold); }
 </div>
 <div id="toast"></div>
 
-<!-- LIGHTBOX -->
 <div id="lightbox">
   <button id="lightbox-close">✕</button>
   <div id="lightbox-frame">
@@ -334,7 +286,6 @@ header h1 span { color:var(--gold); }
   </div>
 </div>
 
-<!-- LOGIN MODAL -->
 <div class="modal-overlay" id="login-modal">
   <div class="modal">
     <button class="close-modal" id="login-close">✕</button>
@@ -355,7 +306,6 @@ header h1 span { color:var(--gold); }
   </div>
 </div>
 
-<!-- UPLOAD MODAL -->
 <div class="modal-overlay" id="upload-modal">
   <div class="modal">
     <button class="close-modal" id="upload-close">✕</button>
@@ -388,7 +338,6 @@ header h1 span { color:var(--gold); }
   </div>
 </div>
 
-<!-- CHANGE PASSWORD MODAL -->
 <div class="modal-overlay" id="password-modal">
   <div class="modal">
     <button class="close-modal" id="pw-close">✕</button>
@@ -415,64 +364,90 @@ header h1 span { color:var(--gold); }
 </div>
 
 <script>
-// ─────────────────────────────────────────
-// CONFIG — saved in localStorage
-// ─────────────────────────────────────────
 const DEFAULT_PW = 'helena2025';
-let supabase = null;
+const SB_URL = 'https://kovtunrgiskoqgglmlzb.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvdnR1bnJnaXNrb3FnZ2xtbHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyMDIzNDMsImV4cCI6MjA4OTc3ODM0M30.axgxZyVYnVmuMPlYRmBN-e0QQUDmliuAAXpxY7ZUVS0';
+let supabaseClient = null;
 let loggedIn = false;
 let pendingFile = null;
 let artworksCache = [];
 
-function getCfg() {
-  return {
-    url: localStorage.getItem('hg_sb_url') || '',
-    key: localStorage.getItem('hg_sb_key') || ''
-  };
-}
 function getPassword() { return localStorage.getItem('hg_pw') || DEFAULT_PW; }
 
-// ─────────────────────────────────────────
-// SUPABASE INIT
-// ─────────────────────────────────────────
-function initSupabase(url, key) {
-  try {
-    supabase = window.supabase.createClient(url, key);
-    return true;
-  } catch(e) {
-    return false;
-  }
+function sbHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY
+  };
+}
+
+async function sbSelect() {
+  var res = await fetch(SB_URL + '/rest/v1/artworks?select=*&order=created_at.desc', {
+    mode: 'cors',
+    headers: sbHeaders()
+  });
+  var data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+async function sbInsert(record) {
+  var res = await fetch(SB_URL + '/rest/v1/artworks', {
+    method: 'POST',
+    mode: 'cors',
+    headers: Object.assign({}, sbHeaders(), { 'Prefer': 'return=representation' }),
+    body: JSON.stringify(record)
+  });
+  var data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+async function sbDelete(id) {
+  var res = await fetch(SB_URL + '/rest/v1/artworks?id=eq.' + id, {
+    method: 'DELETE',
+    mode: 'cors',
+    headers: sbHeaders()
+  });
+  if (!res.ok) { var d = await res.json(); throw d; }
+}
+
+async function sbUpload(fileName, file) {
+  var res = await fetch(SB_URL + '/storage/v1/object/artwork-images/' + fileName, {
+    method: 'POST',
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': file.type,
+      'x-upsert': 'false'
+    },
+    body: file
+  });
+  var data = await res.json();
+  if (!res.ok) throw data;
+  return data;
+}
+
+function sbPublicUrl(fileName) {
+  return SB_URL + '/storage/v1/object/public/artwork-images/' + fileName;
+}
+
+async function sbDeleteFile(fileName) {
+  await fetch(SB_URL + '/storage/v1/object/artwork-images/' + fileName, {
+    method: 'DELETE',
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  });
 }
 
 function tryAutoConnect() {
-  var cfg = getCfg();
-  if (cfg.url && cfg.key) {
-    if (initSupabase(cfg.url, cfg.key)) {
-      document.getElementById('setup-banner').classList.add('hidden');
-      return true;
-    }
-  }
-  return false;
+  supabaseClient = true;
+  return true;
 }
 
-document.getElementById('btn-connect').addEventListener('click', function() {
-  var url = document.getElementById('sb-url').value.trim();
-  var key = document.getElementById('sb-key').value.trim();
-  if (!url || !key) { showToast('Please enter both URL and Key'); return; }
-  if (initSupabase(url, key)) {
-    localStorage.setItem('hg_sb_url', url);
-    localStorage.setItem('hg_sb_key', key);
-    document.getElementById('setup-banner').classList.add('hidden');
-    showToast('Connected to Supabase ✦');
-    loadAndRender();
-  } else {
-    showToast('Connection failed — check your URL and Key');
-  }
-});
 
-// ─────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────
+
 function showModal(id)  { document.getElementById(id).classList.add('active'); }
 function hideModal(id)  { document.getElementById(id).classList.remove('active'); }
 function esc(s)         { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -482,30 +457,19 @@ function showToast(msg) {
   setTimeout(function() { t.classList.remove('show'); }, 3500);
 }
 
-// ─────────────────────────────────────────
-// LOAD & RENDER
-// ─────────────────────────────────────────
 async function loadAndRender() {
   var grid = document.getElementById('gallery-grid');
   grid.innerHTML = '<div id="loading-state"><div class="spinner"></div><p style="color:var(--text-light);letter-spacing:.2em;font-size:.8rem;">Loading collection…</p></div>';
 
-  if (!supabase) {
-    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔌</div><p class="empty-text">Not connected to Supabase yet</p><p class="empty-sub">Fill in your credentials above</p></div>';
-    return;
-  }
+  
 
   try {
-    var result = await supabase
-      .from('artworks')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (result.error) throw result.error;
-    artworksCache = result.data || [];
+    artworksCache = await sbSelect();
     renderGallery(artworksCache);
   } catch(e) {
     console.error(e);
-    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠</div><p class="empty-text">Could not load artworks</p><p class="empty-sub">' + esc(e.message) + '</p></div>';
+    var errMsg = e.message || e.details || e.hint || JSON.stringify(e);
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠</div><p class="empty-text">Could not load artworks</p><p class="empty-sub">' + esc(errMsg) + '</p></div>';
   }
 }
 
@@ -568,29 +532,17 @@ function renderGallery(artworks) {
   document.getElementById('status-count').textContent = n + ' work' + (n !== 1 ? 's' : '') + ' in collection';
 }
 
-// ─────────────────────────────────────────
-// DELETE
-// ─────────────────────────────────────────
 async function deleteArtwork(id, imagePath) {
-  if (!supabase) return;
   try {
-    // Delete image from storage
-    if (imagePath) {
-      await supabase.storage.from('artwork-images').remove([imagePath]);
-    }
-    // Delete row from database
-    var result = await supabase.from('artworks').delete().eq('id', id);
-    if (result.error) throw result.error;
+    if (imagePath) await sbDeleteFile(imagePath);
+    await sbDelete(id);
     showToast('Artwork removed from the collection');
     loadAndRender();
   } catch(e) {
-    showToast('Error removing artwork: ' + e.message);
+    showToast('Error: ' + (e.message || e.details || JSON.stringify(e)));
   }
 }
 
-// ─────────────────────────────────────────
-// NAV
-// ─────────────────────────────────────────
 function updateNav() {
   document.getElementById('btn-login').style.display  = loggedIn ? 'none' : '';
   document.getElementById('btn-upload').style.display = loggedIn ? ''     : 'none';
@@ -607,9 +559,6 @@ function updateNav() {
   if (!loggedIn && existing) existing.remove();
 }
 
-// ─────────────────────────────────────────
-// LOGIN / LOGOUT
-// ─────────────────────────────────────────
 document.getElementById('btn-login').addEventListener('click', function() {
   document.getElementById('login-password').value = '';
   document.getElementById('login-error').style.display = 'none';
@@ -645,9 +594,6 @@ document.getElementById('btn-logout').addEventListener('click', function() {
   showToast('Logged out of curator mode');
 });
 
-// ─────────────────────────────────────────
-// UPLOAD
-// ─────────────────────────────────────────
 document.getElementById('btn-upload').addEventListener('click', openUploadModal);
 document.getElementById('upload-close').addEventListener('click',  function() { hideModal('upload-modal'); });
 document.getElementById('upload-cancel').addEventListener('click', function() { hideModal('upload-modal'); });
@@ -691,7 +637,7 @@ async function doUpload() {
     document.getElementById('upload-error').style.display = 'block';
     return;
   }
-  if (!supabase) { showToast('Not connected to Supabase'); return; }
+  
 
   document.getElementById('upload-error').style.display = 'none';
   document.getElementById('upload-submit').textContent = 'Uploading…';
@@ -700,33 +646,23 @@ async function doUpload() {
   document.getElementById('upload-progress-bar').style.width = '30%';
 
   try {
-    // 1. Upload image to Supabase Storage
     var ext = pendingFile.name.split('.').pop();
     var fileName = Date.now() + '_' + Math.floor(Math.random()*9999) + '.' + ext;
 
     document.getElementById('upload-progress-bar').style.width = '60%';
 
-    var storageResult = await supabase.storage
-      .from('artwork-images')
-      .upload(fileName, pendingFile, { cacheControl: '3600', upsert: false });
-
-    if (storageResult.error) throw storageResult.error;
+    await sbUpload(fileName, pendingFile);
 
     document.getElementById('upload-progress-bar').style.width = '80%';
 
-    // 2. Get public URL
-    var urlResult = supabase.storage.from('artwork-images').getPublicUrl(fileName);
-    var publicUrl = urlResult.data.publicUrl;
+    var publicUrl = sbPublicUrl(fileName);
 
-    // 3. Insert record into artworks table
-    var insertResult = await supabase.from('artworks').insert([{
+    await sbInsert({
       title: title,
       meta: meta,
       image_url: publicUrl,
       image_path: fileName
-    }]);
-
-    if (insertResult.error) throw insertResult.error;
+    });
 
     document.getElementById('upload-progress-bar').style.width = '100%';
 
@@ -743,12 +679,11 @@ async function doUpload() {
     document.getElementById('upload-submit').disabled = false;
     document.getElementById('upload-progress').style.display = 'none';
     document.getElementById('upload-error').style.display = 'block';
-    document.getElementById('upload-error').textContent = 'Upload failed: ' + e.message;
+    document.getElementById('upload-error').textContent = 'Upload failed: ' + (e.message || e.details || JSON.stringify(e));
     console.error(e);
   }
 }
 
-// Drag and drop
 var dz = document.getElementById('drop-zone');
 dz.addEventListener('dragover',  function(e) { e.preventDefault(); dz.classList.add('dragover'); });
 dz.addEventListener('dragleave', function()  { dz.classList.remove('dragover'); });
@@ -758,9 +693,6 @@ dz.addEventListener('drop', function(e) {
   if (file && file.type.startsWith('image/')) { pendingFile = file; showPreview(file); }
 });
 
-// ─────────────────────────────────────────
-// LIGHTBOX
-// ─────────────────────────────────────────
 function openLightbox(art) {
   document.getElementById('lightbox-img').src = art.image_url;
   document.getElementById('lightbox-title').textContent = art.title;
@@ -771,9 +703,6 @@ function openLightbox(art) {
 document.getElementById('lightbox-close').addEventListener('click', function() { hideModal('lightbox'); });
 document.getElementById('lightbox').addEventListener('click', function(e) { if (e.target === this) hideModal('lightbox'); });
 
-// ─────────────────────────────────────────
-// CHANGE PASSWORD
-// ─────────────────────────────────────────
 function openPasswordModal() {
   document.getElementById('pw-current').value = '';
   document.getElementById('pw-new').value = '';
@@ -796,18 +725,12 @@ document.getElementById('pw-submit').addEventListener('click', function() {
   showToast('Password updated ✦');
 });
 
-// ─────────────────────────────────────────
-// ESC KEY
-// ─────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     ['login-modal','upload-modal','password-modal','lightbox'].forEach(hideModal);
   }
 });
 
-// ─────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────
 loggedIn = sessionStorage.getItem('hg_session') === '1';
 updateNav();
 if (tryAutoConnect()) {
